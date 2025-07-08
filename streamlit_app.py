@@ -33,11 +33,18 @@ df = load_data()
 # Fetch stock price from yfinance
 def get_stock_price(ticker, date):
     try:
-        data = yf.download(ticker, start=date - datetime.timedelta(days=3), end=date + datetime.timedelta(days=3))
+        start = date - datetime.timedelta(days=3)
+        end = date + datetime.timedelta(days=3)
+
+        data = yf.download(ticker, start=start, end=end)
+
         if not data.empty:
-            return round(data['Close'].iloc[0], 2), round(data['Close'].iloc[-1], 2)
+            price_before = data['Close'].iloc[0]
+            price_after = data['Close'].iloc[-1]
+            return float(price_before), float(price_after)  # ✅ force conversion to float
     except Exception as e:
         st.error(f"Error fetching stock data: {e}")
+
     return None, None
 
 # Analyze sentiment with OpenAI
@@ -60,7 +67,7 @@ if st.sidebar.button("Add Event"):
     before, after = get_stock_price(ticker, event_date)
     sentiment = analyze_sentiment(event_description)
   
-    if pd.notna(before) and pd.notna(after):
+    if before is not None and after is not None:
         change = round(((after - before) / before) * 100, 2)
     else:
         change = None
