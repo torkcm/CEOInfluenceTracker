@@ -44,7 +44,7 @@ def get_stock_price(ticker, date):
 def analyze_sentiment(text):
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4.1",
             messages=[
                 {"role": "system", "content": "You are a sentiment analysis engine."},
                 {"role": "user", "content": f"What is the sentiment of this news headline or event description? Respond only with Positive, Neutral, or Negative.\n\n{text}"}
