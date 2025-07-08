@@ -6,7 +6,7 @@ import datetime
 import openai
 
 # Set your OpenAI API key
-openai.api_key = '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'
+openai.api_key = "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"
 
 # Title
 st.title("🧠 CEO Influence Tracker")
