@@ -119,11 +119,26 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
     st.subheader(f"Latest news on {ceo_name}")
     articles = fetch_news(ceo_name, company)
 
-    for article in articles:
-        st.markdown(f"**{article['headline']}**  \n[{article['link']}]({article['link']})  \n_Date: {article['date']}_")
+    if not articles:
+        st.warning("No recent articles found.")
+    else:
+        combined_events = []
+        combined_links = []
+        dates = []
 
-        sentiment = analyze_sentiment(article['headline'])
-        before, after = get_stock_price(ticker, article['date'])
+        for article in articles:
+            st.markdown(f"**{article['headline']}**  \n[{article['link']}]({article['link']})  \n_Date: {article['date']}_")
+            combined_events.append(article["headline"])
+            combined_links.append(article["link"])
+            dates.append(article["date"])
+
+        # Use the most common date (usually all are same)
+        most_common_date = max(set(dates), key=dates.count)
+        combined_text = "; ".join(combined_events)
+        combined_links_str = "; ".join(combined_links)
+
+        sentiment = analyze_sentiment(combined_text)
+        before, after = get_stock_price(ticker, most_common_date)
 
         if before is not None and after is not None:
             change = round(((after - before) / before) * 100, 2)
@@ -131,14 +146,15 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
             change = None
 
         new_row = {
-            "Date": article['date'], "CEO": ceo_name, "Company": company,
-            "Ticker": ticker, "Event": article['headline'], "Sentiment": sentiment,
+            "Date": most_common_date, "CEO": ceo_name, "Company": company,
+            "Ticker": ticker, "Event": combined_text, "Sentiment": sentiment,
             "Price Before": before, "Price After": after, "% Change": change,
-            "News Link": article['link']
+            "News Link": combined_links_str
         }
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-       
-    st.success("News events added!")
+
+        st.success("Combined news added as one row!")
+
 
 # === Display data table ===
 st.subheader("📋 Logged CEO Events")
