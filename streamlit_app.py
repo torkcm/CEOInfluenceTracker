@@ -122,39 +122,53 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
     if not articles:
         st.warning("No recent articles found.")
     else:
-        combined_events = []
-        combined_links = []
+        bullet_points = []
+        sentiments = []
+        links = []
         dates = []
 
         for article in articles:
             st.markdown(f"**{article['headline']}**  \n[{article['link']}]({article['link']})  \n_Date: {article['date']}_")
-            combined_events.append(article["headline"])
-            combined_links.append(article["link"])
+
+            # Analyze sentiment for each headline individually
+            sentiment = analyze_sentiment(article["headline"])
+            bullet_points.append(f"• {article['headline']} _({sentiment})_")
+            sentiments.append(sentiment)
+            links.append(article["link"])
             dates.append(article["date"])
 
-        # Use the most common date (usually all are same)
+        # Combine for display
+        event_block = "\n".join(bullet_points)
+        combined_links = "; ".join(links)
         most_common_date = max(set(dates), key=dates.count)
-        combined_text = "; ".join(combined_events)
-        combined_links_str = "; ".join(combined_links)
 
-        sentiment = analyze_sentiment(combined_text)
+        # Sentiment summary (majority sentiment or "Mixed")
+        if all(s == sentiments[0] for s in sentiments):
+            overall_sentiment = sentiments[0]
+        else:
+            overall_sentiment = "Mixed"
+
         before, after = get_stock_price(ticker, most_common_date)
-
         if before is not None and after is not None:
             change = round(((after - before) / before) * 100, 2)
         else:
             change = None
 
         new_row = {
-            "Date": most_common_date, "CEO": ceo_name, "Company": company,
-            "Ticker": ticker, "Event": combined_text, "Sentiment": sentiment,
-            "Price Before": before, "Price After": after, "% Change": change,
-            "News Link": combined_links_str
+            "Date": most_common_date,
+            "CEO": ceo_name,
+            "Company": company,
+            "Ticker": ticker,
+            "Event": event_block,
+            "Sentiment": overall_sentiment,
+            "Price Before": before,
+            "Price After": after,
+            "% Change": change,
+            "News Link": combined_links
         }
+
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-
-        st.success("Combined news added as one row!")
-
+        st.success("Grouped news added as a single summarized event!")
 
 # === Display data table ===
 st.subheader("📋 Logged CEO Events")
