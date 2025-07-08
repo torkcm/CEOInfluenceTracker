@@ -6,7 +6,7 @@ import datetime
 import openai
 
 # Set your OpenAI API key
-openai.api_key = "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"
+openai.api_key = st.secrets["openai"]["api_key"]
 
 # Title
 st.title("🧠 CEO Influence Tracker")
