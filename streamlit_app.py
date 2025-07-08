@@ -59,7 +59,12 @@ def analyze_sentiment(text):
 if st.sidebar.button("Add Event"):
     before, after = get_stock_price(ticker, event_date)
     sentiment = analyze_sentiment(event_description)
-    change = round(((after - before) / before) * 100, 2) if before and after else None
+  
+    if pd.notna(before) and pd.notna(after):
+        change = round(((after - before) / before) * 100, 2)
+    else:
+        change = None
+    
     new_row = {
         "Date": event_date, "CEO": ceo_name, "Company": company,
         "Ticker": ticker, "Event": event_description, "Sentiment": sentiment,
