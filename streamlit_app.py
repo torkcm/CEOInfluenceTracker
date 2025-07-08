@@ -175,5 +175,15 @@ st.subheader("📋 Logged CEO Events")
 df_sorted = df.sort_values(by="Date", ascending=False)
 st.dataframe(df_sorted)
 
+st.subheader("📋 Logged CEO Events (Detailed View)")
+
+for i, row in df_sorted.iterrows():
+    with st.expander(f"{row['Date']} — {row['CEO']} @ {row['Company']}"):
+        st.markdown(f"**Sentiment:** {row['Sentiment']}")
+        st.markdown(f"**Stock Change:** {row['% Change']}%")
+        st.markdown("**Event(s):**")
+        st.markdown(row['Event'])
+        st.markdown(f"[News Link(s)]({row['News Link'].split(';')[0]})")
+
 # === CSV Download ===
 st.download_button("📥 Download CSV", df.to_csv(index=False), file_name="ceo_influence_log.csv")
