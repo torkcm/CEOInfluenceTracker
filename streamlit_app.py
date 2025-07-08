@@ -4,6 +4,7 @@ import yfinance as yf
 import requests
 import datetime
 import openai
+import feedparser
 
 # Set your OpenAI API key
 openai.api_key = st.secrets["openai"]["api_key"]
@@ -29,6 +30,21 @@ def load_data():
     ])
 
 df = load_data()
+
+# Function to fetch recent news headlines about the CEO
+def fetch_news(ceo_name, company, max_articles=5):
+    query = f"{ceo_name} {company}"
+    url = f"https://news.google.com/rss/search?q={query.replace(' ', '+')}&hl=en-US&gl=US&ceid=US:en"
+    feed = feedparser.parse(url)
+    
+    events = []
+    for entry in feed.entries[:max_articles]:
+        headline = entry.title
+        link = entry.link
+        published = datetime.datetime(*entry.published_parsed[:6]).date()
+        events.append({"headline": headline, "link": link, "date": published})
+    
+    return events
 
 # Fetch stock price from yfinance
 def get_stock_price(ticker, date):
@@ -80,6 +96,31 @@ if st.sidebar.button("Add Event"):
     }
     df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
     st.success("Event added!")
+
+if st.sidebar.button("📰 Auto-Fetch CEO News"):
+    st.subheader(f"Latest news on {ceo_name}")
+    articles = fetch_news(ceo_name, company)
+
+    for article in articles:
+        st.markdown(f"**{article['headline']}**  \n[{article['link']}]({article['link']})  \n_Date: {article['date']}_")
+
+        # Process each article into a new row
+        sentiment = analyze_sentiment(article['headline'])
+        before, after = get_stock_price(ticker, article['date'])
+        if before is not None and after is not None:
+            change = round(((after - before) / before) * 100, 2)
+        else:
+            change = None
+
+        new_row = {
+            "Date": article['date'], "CEO": ceo_name, "Company": company,
+            "Ticker": ticker, "Event": article['headline'], "Sentiment": sentiment,
+            "Price Before": before, "Price After": after, "% Change": change,
+            "News Link": article['link']
+        }
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+
+    st.success("News events added!")
 
 # Display table
 st.subheader("📋 Logged CEO Events")
