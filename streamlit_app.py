@@ -137,11 +137,12 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
             "News Link": article['link']
         }
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-
+       
     st.success("News events added!")
 
 # === Display data table ===
 st.subheader("📋 Logged CEO Events")
+df_sorted = df.sort_values(by="Date", ascending=False)
 st.dataframe(df)
 
 # === CSV Download ===
