@@ -122,68 +122,42 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
     if not articles:
         st.warning("No recent articles found.")
     else:
-        bullet_points = []
-        sentiments = []
-        links = []
-        dates = []
-
         for article in articles:
-            st.markdown(f"**{article['headline']}**  \n[{article['link']}]({article['link']})  \n_Date: {article['date']}_")
+            headline = article["headline"]
+            link = article["link"]
+            date = article["date"]
 
-            # Analyze sentiment for each headline individually
-            sentiment = analyze_sentiment(article["headline"])
-            bullet_points.append(f"• {article['headline']} _({sentiment})_")
-            sentiments.append(sentiment)
-            links.append(article["link"])
-            dates.append(article["date"])
+            st.markdown(f"**{headline}**  \n[{link}]({link})  \n_Date: {date}_")
 
-        # Combine for display
-        event_block = "\n".join(bullet_points)
-        combined_links = "; ".join(links)
-        most_common_date = max(set(dates), key=dates.count)
+            sentiment = analyze_sentiment(headline)
+            before, after = get_stock_price(ticker, date)
 
-        # Sentiment summary (majority sentiment or "Mixed")
-        if all(s == sentiments[0] for s in sentiments):
-            overall_sentiment = sentiments[0]
-        else:
-            overall_sentiment = "Mixed"
+            if before is not None and after is not None:
+                change = round(((after - before) / before) * 100, 2)
+            else:
+                change = None
 
-        before, after = get_stock_price(ticker, most_common_date)
-        if before is not None and after is not None:
-            change = round(((after - before) / before) * 100, 2)
-        else:
-            change = None
+            new_row = {
+                "Date": date,
+                "CEO": ceo_name,
+                "Company": company,
+                "Ticker": ticker,
+                "Event": headline,
+                "Sentiment": sentiment,
+                "Price Before": before,
+                "Price After": after,
+                "% Change": change,
+                "News Link": link
+            }
 
-        new_row = {
-            "Date": most_common_date,
-            "CEO": ceo_name,
-            "Company": company,
-            "Ticker": ticker,
-            "Event": event_block,
-            "Sentiment": overall_sentiment,
-            "Price Before": before,
-            "Price After": after,
-            "% Change": change,
-            "News Link": combined_links
-        }
+            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
 
-        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-        st.success("Grouped news added as a single summarized event!")
+        st.success("Each news article added as an individual event row.")
 
 # === Display data table ===
 st.subheader("📋 Logged CEO Events")
 df_sorted = df.sort_values(by="Date", ascending=False)
 st.dataframe(df_sorted)
-
-st.subheader("📋 Logged CEO Events (Detailed View)")
-
-for i, row in df_sorted.iterrows():
-    with st.expander(f"{row['Date']} — {row['CEO']} @ {row['Company']}"):
-        st.markdown(f"**Sentiment:** {row['Sentiment']}")
-        st.markdown(f"**Stock Change:** {row['% Change']}%")
-        st.markdown("**Event(s):**")
-        st.markdown(row['Event'])
-        st.markdown(f"[News Link(s)]({row['News Link'].split(';')[0]})")
 
 # === CSV Download ===
 st.download_button("📥 Download CSV", df.to_csv(index=False), file_name="ceo_influence_log.csv")
