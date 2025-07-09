@@ -119,22 +119,21 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
     st.subheader(f"Latest news on {ceo_name}")
     articles = fetch_news(ceo_name, company)
 
-    # ✅ Define allowed sources
-    allowed_sources = ["cnbc.com", "nytimes.com", "wsj.com"]
+    # ✅ Keywords to filter by (source names in event text)
+    allowed_keywords = ["cnbc", "new york times", "wall street journal", "wsj"]
 
     if not articles:
         st.warning("No recent articles found.")
     else:
         added_any = False
         for article in articles:
-            source_url = article.get("link", "")
-            if not any(src in source_url for src in allowed_sources):
-                continue  # ❌ Skip if not from trusted source
-
-            # ✅ Proceed with valid articles
             headline = article["headline"]
             link = article["link"]
             date = article["date"]
+
+            # ✅ Check if any keyword is in the headline (case-insensitive)
+            if not any(keyword in headline.lower() for keyword in allowed_keywords):
+                continue  # Skip if source not mentioned in headline
 
             st.markdown(f"**{headline}**  \n[{link}]({link})  \n_Date: {date}_")
 
@@ -163,9 +162,10 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
             added_any = True
 
         if added_any:
-            st.success("Filtered news events added.")
+            st.success("Filtered news added (based on headline content).")
         else:
-            st.info("No articles from CNBC, NYT, or WSJ were found.")
+            st.info("No matching articles found containing CNBC, NYT, or WSJ.")
+
 
 # === Display data table ===
 st.subheader("📋 Logged CEO Events")
