@@ -120,7 +120,7 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
     articles = fetch_news(ceo_name, company)
 
     # ✅ Keywords to filter by (source names in event text)
-    allowed_keywords = ["cnbc", "new york times", "wall street journal", "wsj"]
+    allowed_keywords = ["cnbc", "new york", "wsj"]
 
     if not articles:
         st.warning("No recent articles found.")
