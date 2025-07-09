@@ -119,10 +119,19 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
     st.subheader(f"Latest news on {ceo_name}")
     articles = fetch_news(ceo_name, company)
 
+    # ✅ Define allowed sources
+    allowed_sources = ["cnbc.com", "nytimes.com", "wsj.com"]
+
     if not articles:
         st.warning("No recent articles found.")
     else:
+        added_any = False
         for article in articles:
+            source_url = article.get("link", "")
+            if not any(src in source_url for src in allowed_sources):
+                continue  # ❌ Skip if not from trusted source
+
+            # ✅ Proceed with valid articles
             headline = article["headline"]
             link = article["link"]
             date = article["date"]
@@ -151,8 +160,12 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
             }
 
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+            added_any = True
 
-        st.success("Each news article added as an individual event row.")
+        if added_any:
+            st.success("Filtered news events added.")
+        else:
+            st.info("No articles from CNBC, NYT, or WSJ were found.")
 
 # === Display data table ===
 st.subheader("📋 Logged CEO Events")
