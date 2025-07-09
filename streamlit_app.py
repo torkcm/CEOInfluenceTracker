@@ -132,8 +132,8 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
             date = article["date"]
 
             # ✅ Check if any keyword is in the headline (case-insensitive)
-            if not any(keyword in headline.lower() for keyword in allowed_keywords):
-                continue  # Skip if source not mentioned in headline
+            #if not any(keyword in headline.lower() for keyword in allowed_keywords):
+            #    continue  # Skip if source not mentioned in headline
 
             st.markdown(f"**{headline}**  \n[{link}]({link})  \n_Date: {date}_")
 
