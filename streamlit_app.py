@@ -120,7 +120,7 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
     articles = fetch_news(ceo_name, company)
 
     # ✅ Keywords to filter by (source names in event text)
-    allowed_keywords = ["cnbc", "new york", "wsj"]
+    allowed_keywords = ["cnbc", "the new york times", "wsj"]
 
     if not articles:
         st.warning("No recent articles found.")
@@ -132,8 +132,8 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
             date = article["date"]
 
             # ✅ Check if any keyword is in the headline (case-insensitive)
-            #if not any(keyword in headline.lower() for keyword in allowed_keywords):
-            #    continue  # Skip if source not mentioned in headline
+            if not any(keyword in headline.lower() for keyword in allowed_keywords):
+                continue  # Skip if source not mentioned in headline
 
             st.markdown(f"**{headline}**  \n[{link}]({link})  \n_Date: {date}_")
 
