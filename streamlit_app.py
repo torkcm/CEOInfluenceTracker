@@ -157,7 +157,7 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
 # === Display data table ===
 st.subheader("📋 Logged CEO Events")
 df_sorted = df.sort_values(by="Date", ascending=False)
-st.dataframe(df_sorted, use_container_width=True, height=600)
+st.dataframe(df_sorted)
 
 # === CSV Download ===
 st.download_button("📥 Download CSV", df.to_csv(index=False), file_name="ceo_influence_log.csv")
