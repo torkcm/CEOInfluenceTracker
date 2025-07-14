@@ -241,9 +241,8 @@ if st.button("🔄 Load Top Losers"):
                     headline = article["headline"]
                     link = article["link"]
                     date = article["date"]
-                    st.markdown(f"- **{headline}**  
-[{link}]({link}) (_{date}_)")
-
+                    st.markdown(f"- **{headline}**  \\n[{link}]({link}) (_{date}_)")
+                    
                     sentiment = analyze_sentiment(headline)
                     before, after = get_stock_price(ticker, date)
 
