@@ -5,3 +5,4 @@ feedparser
 lxml
 yahoo_fin
 requests_html
+lxml_html_clean
