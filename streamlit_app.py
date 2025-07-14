@@ -8,13 +8,16 @@ import datetime
 import openai
 import os
 import feedparser
-from yahoo_fin import stock_info as si
+from requests_html import HTMLSession
+import yahoo_fin.stock_info as si
 
 # === SETUP OPENAI API KEY from environment variable ===
 openai.api_key = st.secrets["openai"]["api_key"]
 if not openai.api_key:
     st.error("⚠️ Please set your OPENAI_API_KEY as an environment variable.")
     st.stop()
+
+si.HTMLSession = HTMLSession
 
 st.title("🧠 CEO Influence Tracker")
 
