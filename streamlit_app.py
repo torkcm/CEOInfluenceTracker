@@ -178,54 +178,24 @@ st.dataframe(df_sorted, use_container_width=True)
 # === CSV Download ===
 st.download_button("📥 Download CSV", df.to_csv(index=False), file_name="ceo_influence_log.csv")
 
-
-# === 📉 Big Drop Scanner ===
-st.subheader("📉 Daily Drop Scanner (-7% or more)")
+# === Yahoo Finance Top Daily Losers ===
+st.subheader("📉 Yahoo Finance Top Daily Losers")
 
 @st.cache_data(show_spinner=False)
-def load_yahoo_top_losers(top_n=5):
+def load_yahoo_top_losers(top_n=25):
     try:
         losers_df = si.get_day_losers()
-        return losers_df["Symbol"].head(top_n).tolist()
+        return losers_df.head(top_n)
     except Exception as e:
-        st.error(f"⚠️ Failed to load Yahoo top losers: {e}")
-        return []
-    
-use_yahoo = st.checkbox("Scan today's top Yahoo Finance losers", value=True)
+        st.error(f"⚠️ Could not load Yahoo Finance data: {e}")
+        return pd.DataFrame()
 
-if use_yahoo:
-    tickers_list = load_yahoo_top_losers()
-else:
-    tickers_input = st.text_area("Enter tickers to scan (comma-separated):", "TSLA,AAPL,NFLX")
-    tickers_list = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
+# Allow user to refresh or control how many to show
+top_n = st.slider("Number of top losers to display", 5, 50, 25)
 
-drop_threshold = st.slider("Drop Threshold (%)", min_value=1, max_value=20, value=7)
-
-def get_big_drops(tickers, drop_threshold=-7.0):
-    big_drops = []
-    end = datetime.date.today()
-    start = end - datetime.timedelta(days=5)
-    for ticker in tickers:
-        try:
-            data = yf.download(ticker, start=start, end=end)
-            if len(data) < 2:
-                continue
-            data["% Change"] = data["Close"].pct_change() * 100
-            recent = data.iloc[-1]
-            if recent["% Change"] <= -abs(drop_threshold):
-                big_drops.append({
-                    "Ticker": ticker,
-                    "Date": recent.name.date(),
-                    "Close": round(recent["Close"], 2),
-                    "% Change": round(recent["% Change"], 2)
-                })
-        except:
-            continue
-    return pd.DataFrame(big_drops)
-
-if st.button("📊 Scan for -7% Drops"):
-    df_drops = get_big_drops(tickers_list, drop_threshold)
-    if df_drops.empty:
-        st.info("✅ No stocks dropped more than {}% in the last session.".format(drop_threshold))
+if st.button("🔄 Load Top Losers"):
+    yahoo_losers = load_yahoo_top_losers(top_n)
+    if yahoo_losers.empty:
+        st.info("No data available.")
     else:
-        st.dataframe(df_drops.sort_values(by="% Change"), use_container_width=True)
+        st.dataframe(yahoo_losers, use_container_width=True)
