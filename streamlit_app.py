@@ -188,7 +188,10 @@ st.subheader("📉 Yahoo Finance Top Daily Losers")
 def load_yahoo_top_losers(top_n=25):
     try:
         losers_df = si.get_day_losers()
-        return losers_df.head(top_n)
+        if "Symbol" in losers_df.columns:
+            return losers_df[["Symbol", "Name", "% Change", "Price"]].head(top_n)
+        else:
+            raise ValueError("Expected 'Symbol' column not found.")
     except Exception as e:
         st.error(f"⚠️ Could not load Yahoo Finance data: {e}")
         return pd.DataFrame()
