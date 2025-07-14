@@ -255,8 +255,7 @@ if st.button("🔄 Load Top Losers"):
                         "% Change": change,
                         "News Link": link
                     }
-                    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-                    st.session_state.df = df
+                    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)                    
                     added_events.append(new_row)
 
         if added_events:
@@ -264,7 +263,7 @@ if st.button("🔄 Load Top Losers"):
              
 # === Display data table ===
 st.subheader("📋 Logged CEO Events")
-df_sorted = df.sort_values(by="Date", ascending=False)
+df_sorted = df.sort_values(by=["Date", "Ticker"], ascending=False)
 st.dataframe(df_sorted, use_container_width=True)
 
 # === CSV Download ===
