@@ -202,8 +202,11 @@ def fetch_yahoo_losers(top_n=25):
             symbol = cols[0].text.strip()
             name = cols[1].text.strip()
             price = cols[2].text.strip()
-            change = cols[3].text.strip()
-            percent_change = cols[4].text.strip()
+            change_data = cols[3].text.strip().split()
+               if len(change_data) == 3:
+                   price, change, percent_change = change_data
+               else:
+                   price, change, percent_change = "", "", ""
             data.append({
                 "Symbol": symbol,
                 "Name": name,
