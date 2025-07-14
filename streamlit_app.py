@@ -10,7 +10,9 @@ import os
 import feedparser
 from requests_html import HTMLSession
 import yahoo_fin.stock_info as si
-
+import requests
+from bs4 import BeautifulSoup
+     
 # === SETUP OPENAI API KEY from environment variable ===
 openai.api_key = st.secrets["openai"]["api_key"]
 if not openai.api_key:
@@ -185,20 +187,40 @@ st.download_button("📥 Download CSV", df.to_csv(index=False), file_name="ceo_i
 st.subheader("📉 Yahoo Finance Top Daily Losers")
 
 @st.cache_data(show_spinner=False)
-def load_yahoo_top_losers(top_n=25):
+def fetch_yahoo_losers(top_n=25):
+    url = "https://finance.yahoo.com/losers"
+    headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        losers_df = si.get_day_losers()
-        display_cols = [col for col in ["Symbol", "Name", "% Change", "Price", "Change"] if col in losers_df.columns]
-        return losers_df[display_cols].head(top_n)
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
+        table = soup.find("table")
+        rows = table.find("tbody").find_all("tr")
+
+        data = []
+        for row in rows[:top_n]:
+            cols = row.find_all("td")
+            symbol = cols[0].text.strip()
+            name = cols[1].text.strip()
+            price = cols[2].text.strip()
+            change = cols[3].text.strip()
+            percent_change = cols[4].text.strip()
+            data.append({
+                "Symbol": symbol,
+                "Name": name,
+                "Price": price,
+                "Change": change,
+                "% Change": percent_change
+            })
+        return pd.DataFrame(data)
     except Exception as e:
-        st.error(f"⚠️ Could not load Yahoo Finance data: {e}")
+        st.error(f"⚠️ Failed to scrape Yahoo Finance losers: {e}")
         return pd.DataFrame()
-
+        
 top_n = st.slider("Number of top losers to display", 5, 50, 25)
-
 if st.button("🔄 Load Top Losers"):
-    yahoo_losers = load_yahoo_top_losers(top_n)
+    yahoo_losers = fetch_yahoo_losers(top_n)
     if yahoo_losers.empty:
         st.info("No data available.")
     else:
         st.dataframe(yahoo_losers, use_container_width=True)
+
