@@ -3,3 +3,4 @@ yfinance
 openai==0.28
 feedparser
 lxml
+yahoo_fin
