@@ -263,7 +263,7 @@ if st.button("🔄 Load Top Losers"):
              
 # === Display data table ===
 st.subheader("📋 Logged CEO Events")
-df_sorted = df.sort_values(by=["Date", "Ticker"], ascending=False)
+df_sorted = df.sort_values(by=["Ticker", "Date"], ascending=False)
 st.dataframe(df_sorted, use_container_width=True)
 
 # === CSV Download ===
