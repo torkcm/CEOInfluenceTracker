@@ -188,15 +188,12 @@ st.subheader("📉 Yahoo Finance Top Daily Losers")
 def load_yahoo_top_losers(top_n=25):
     try:
         losers_df = si.get_day_losers()
-        if "Symbol" in losers_df.columns:
-            return losers_df[["Symbol", "Name", "% Change", "Price"]].head(top_n)
-        else:
-            raise ValueError("Expected 'Symbol' column not found.")
+        display_cols = [col for col in ["Symbol", "Name", "% Change", "Price", "Change"] if col in losers_df.columns]
+        return losers_df[display_cols].head(top_n)
     except Exception as e:
         st.error(f"⚠️ Could not load Yahoo Finance data: {e}")
         return pd.DataFrame()
 
-# Allow user to refresh or control how many to show
 top_n = st.slider("Number of top losers to display", 5, 50, 25)
 
 if st.button("🔄 Load Top Losers"):
