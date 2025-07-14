@@ -4,3 +4,4 @@ openai==0.28
 feedparser
 lxml
 yahoo_fin
+requests_html
