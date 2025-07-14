@@ -182,17 +182,20 @@ st.download_button("📥 Download CSV", df.to_csv(index=False), file_name="ceo_i
 st.subheader("📉 Daily Drop Scanner (-7% or more)")
 
 @st.cache_data(show_spinner=False)
-def load_sp500_tickers():
-    url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
-    tables = pd.read_html(url)
-    df = tables[0]
-    return df["Symbol"].tolist()
-
+def load_yahoo_losers(top_n=50):
+    url = "https://finance.yahoo.com/markets/stocks/losers/"
+    dfs = pd.read_html(url)
+    if dfs:
+        df = dfs[0]
+        # Ensure 'Symbol' column exists
+        return df['Symbol'].head(top_n).tolist()
+    return []
+    
 # Load dynamically
-use_sp500 = st.checkbox("Use S&P 500 Tickers", value=True)
+use_sp500 = st.checkbox("Use Yahoo Top Loser Tickers", value=True)
 
 if use_sp500:
-    tickers_list = load_sp500_tickers()
+    tickers_list = load_yahoo_losers()
 else:
     tickers_input = st.text_area("Enter tickers to scan (comma-separated):", "TSLA,AAPL,NFLX,NVDA,META,DIS")
     tickers_list = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
