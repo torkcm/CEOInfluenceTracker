@@ -8,6 +8,7 @@ import datetime
 import openai
 import os
 import feedparser
+from yahoo_fin import stock_info as si
 
 # === SETUP OPENAI API KEY from environment variable ===
 openai.api_key = st.secrets["openai"]["api_key"]
@@ -182,25 +183,20 @@ st.download_button("📥 Download CSV", df.to_csv(index=False), file_name="ceo_i
 st.subheader("📉 Daily Drop Scanner (-7% or more)")
 
 @st.cache_data(show_spinner=False)
-def load_yahoo_losers(top_n=50):
-    url = "https://finance.yahoo.com/markets/stocks/losers/"
-    dfs = pd.read_html(url)
-    if dfs:
-        df = dfs[0]
-        # Ensure 'Symbol' column exists
-        return df['Symbol'].head(top_n).tolist()
-    return []
+def load_yahoo_top_losers(top_n=50):
+    try:
+        losers_df = si.get_day_losers()
+        return losers_df["Symbol"].head(top_n).tolist()
+    except Exception as e:
+        st.error(f"⚠️ Failed to load Yahoo top losers: {e}")
+        return []
     
-# Load dynamically
 use_yahoo = st.checkbox("Scan today's top Yahoo Finance losers", value=True)
 
 if use_yahoo:
-    tickers_list = load_yahoo_losers()
+    tickers_list = load_yahoo_top_losers()
 else:
-    tickers_input = st.text_area(
-        "Enter tickers to scan (comma-separated):",
-        "TSLA,AAPL,NFLX,NVDA,META,DIS"
-    )
+    tickers_input = st.text_area("Enter tickers to scan (comma-separated):", "TSLA,AAPL,NFLX")
     tickers_list = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
 
 drop_threshold = st.slider("Drop Threshold (%)", min_value=1, max_value=20, value=7)
