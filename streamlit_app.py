@@ -1,3 +1,6 @@
+# Combined CEO Influence Tracker with Big Drop Scanner
+# Original user code followed by scanner
+
 import streamlit as st
 import pandas as pd
 import yfinance as yf
@@ -85,14 +88,14 @@ def fetch_news(ceo_name, company, max_articles=5):
     query = f"{ceo_name} {company}"
     url = f"https://news.google.com/rss/search?q={query.replace(' ', '+')}&hl=en-US&gl=US&ceid=US:en"
     feed = feedparser.parse(url)
-    
+
     events = []
     for entry in feed.entries[:max_articles]:
         headline = entry.title
         link = entry.link
         published = datetime.datetime(*entry.published_parsed[:6]).date()
         events.append({"headline": headline, "link": link, "date": published})
-    
+
     return events
 
 # === Add single manual event ===
@@ -166,11 +169,46 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
         else:
             st.info("No matching articles found containing CNBC, NYT, or WSJ.")
 
-
 # === Display data table ===
 st.subheader("📋 Logged CEO Events")
 df_sorted = df.sort_values(by="Date", ascending=False)
-st.dataframe(df_sorted)
+st.dataframe(df_sorted, use_container_width=True)
 
 # === CSV Download ===
 st.download_button("📥 Download CSV", df.to_csv(index=False), file_name="ceo_influence_log.csv")
+
+
+# === 📉 Big Drop Scanner ===
+st.subheader("📉 Daily Drop Scanner (-7% or more)")
+tickers_input = st.text_area("Enter tickers to scan (comma-separated):", "TSLA,AAPL,NFLX,NVDA,META,DIS,BA,SQ,NIO,PLTR")
+tickers_list = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
+drop_threshold = st.slider("Drop Threshold (%)", min_value=1, max_value=20, value=7)
+
+def get_big_drops(tickers, drop_threshold=-7.0):
+    big_drops = []
+    end = datetime.date.today()
+    start = end - datetime.timedelta(days=5)
+    for ticker in tickers:
+        try:
+            data = yf.download(ticker, start=start, end=end)
+            if len(data) < 2:
+                continue
+            data["% Change"] = data["Close"].pct_change() * 100
+            recent = data.iloc[-1]
+            if recent["% Change"] <= -abs(drop_threshold):
+                big_drops.append({
+                    "Ticker": ticker,
+                    "Date": recent.name.date(),
+                    "Close": round(recent["Close"], 2),
+                    "% Change": round(recent["% Change"], 2)
+                })
+        except:
+            continue
+    return pd.DataFrame(big_drops)
+
+if st.button("📊 Scan for -7% Drops"):
+    df_drops = get_big_drops(tickers_list, drop_threshold)
+    if df_drops.empty:
+        st.info("✅ No stocks dropped more than {}% in the last session.".format(drop_threshold))
+    else:
+        st.dataframe(df_drops.sort_values(by="% Change"), use_container_width=True)
