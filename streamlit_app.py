@@ -175,14 +175,6 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
         else:
             st.info("No matching articles found containing CNBC, NYT, or WSJ.")
 
-# === Display data table ===
-st.subheader("📋 Logged CEO Events")
-df_sorted = df.sort_values(by="Date", ascending=False)
-st.dataframe(df_sorted, use_container_width=True)
-
-# === CSV Download ===
-st.download_button("📥 Download CSV", df.to_csv(index=False), file_name="ceo_influence_log.csv")
-
 # === Yahoo Finance Top Daily Losers ===
 st.subheader("📉 Yahoo Finance Top Daily Losers")
 
@@ -264,7 +256,16 @@ if st.button("🔄 Load Top Losers"):
                         "News Link": link
                     }
                     df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+                    st.session_state.df = df
                     added_events.append(new_row)
 
         if added_events:
             st.success(f"{len(added_events)} events added to the grid.")
+             
+# === Display data table ===
+st.subheader("📋 Logged CEO Events")
+df_sorted = df.sort_values(by="Date", ascending=False)
+st.dataframe(df_sorted, use_container_width=True)
+
+# === CSV Download ===
+st.download_button("📥 Download CSV", df.to_csv(index=False), file_name="ceo_influence_log.csv")
