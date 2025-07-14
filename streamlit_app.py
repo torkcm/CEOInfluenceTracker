@@ -183,7 +183,7 @@ st.download_button("📥 Download CSV", df.to_csv(index=False), file_name="ceo_i
 st.subheader("📉 Daily Drop Scanner (-7% or more)")
 
 @st.cache_data(show_spinner=False)
-def load_yahoo_top_losers(top_n=50):
+def load_yahoo_top_losers(top_n=5):
     try:
         losers_df = si.get_day_losers()
         return losers_df["Symbol"].head(top_n).tolist()
