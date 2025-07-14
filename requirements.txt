@@ -1,4 +1,5 @@
 streamlit
 yfinance
 openai==0.28
-feedparser 
+feedparser
+lxml
