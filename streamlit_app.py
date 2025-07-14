@@ -192,12 +192,15 @@ def load_yahoo_losers(top_n=50):
     return []
     
 # Load dynamically
-use_sp500 = st.checkbox("Use Yahoo Top Loser Tickers", value=True)
+use_yahoo = st.checkbox("Scan today's top Yahoo Finance losers", value=True)
 
-if use_sp500:
+if use_yahoo:
     tickers_list = load_yahoo_losers()
 else:
-    tickers_input = st.text_area("Enter tickers to scan (comma-separated):", "TSLA,AAPL,NFLX,NVDA,META,DIS")
+    tickers_input = st.text_area(
+        "Enter tickers to scan (comma-separated):",
+        "TSLA,AAPL,NFLX,NVDA,META,DIS"
+    )
     tickers_list = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
 
 drop_threshold = st.slider("Drop Threshold (%)", min_value=1, max_value=20, value=7)
