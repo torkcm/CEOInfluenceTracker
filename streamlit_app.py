@@ -180,8 +180,23 @@ st.download_button("📥 Download CSV", df.to_csv(index=False), file_name="ceo_i
 
 # === 📉 Big Drop Scanner ===
 st.subheader("📉 Daily Drop Scanner (-7% or more)")
-tickers_input = st.text_area("Enter tickers to scan (comma-separated):", "TSLA,AAPL,NFLX,NVDA,META,DIS,BA,SQ,NIO,PLTR")
-tickers_list = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
+
+@st.cache_data(show_spinner=False)
+def load_sp500_tickers():
+    url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+    tables = pd.read_html(url)
+    df = tables[0]
+    return df["Symbol"].tolist()
+
+# Load dynamically
+use_sp500 = st.checkbox("Use S&P 500 Tickers", value=True)
+
+if use_sp500:
+    tickers_list = load_sp500_tickers()
+else:
+    tickers_input = st.text_area("Enter tickers to scan (comma-separated):", "TSLA,AAPL,NFLX,NVDA,META,DIS")
+    tickers_list = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
+
 drop_threshold = st.slider("Drop Threshold (%)", min_value=1, max_value=20, value=7)
 
 def get_big_drops(tickers, drop_threshold=-7.0):
