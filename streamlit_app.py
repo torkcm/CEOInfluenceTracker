@@ -222,8 +222,50 @@ def fetch_yahoo_losers(top_n=25):
 top_n = st.slider("Number of top losers to display", 5, 50, 25)
 if st.button("🔄 Load Top Losers"):
     yahoo_losers = fetch_yahoo_losers(top_n)
-    if yahoo_losers.empty:
-        st.info("No data available.")
-    else:
+    if not yahoo_losers.empty:
         st.dataframe(yahoo_losers, use_container_width=True)
 
+        # === Auto-Fetch News for Each Top Loser Symbol ===
+        st.subheader("📰 Logging News for Top Losers to Grid")
+        added_events = []
+        for i, row in yahoo_losers.iterrows():
+            ticker = row["Symbol"]
+            company = row["Name"]
+
+            st.markdown(f"#### {ticker} - {company}")
+            articles = fetch_news("", company)
+            if not articles:
+                st.markdown("_No recent news found._")
+            else:
+                for article in articles[:3]:  # Limit to 3 per company
+                    headline = article["headline"]
+                    link = article["link"]
+                    date = article["date"]
+                    st.markdown(f"- **{headline}**  
+[{link}]({link}) (_{date}_)")
+
+                    sentiment = analyze_sentiment(headline)
+                    before, after = get_stock_price(ticker, date)
+
+                    if before is not None and after is not None:
+                        change = round(((after - before) / before) * 100, 2)
+                    else:
+                        change = None
+
+                    new_row = {
+                        "Date": date,
+                        "CEO": "",
+                        "Company": company,
+                        "Ticker": ticker,
+                        "Event": headline,
+                        "Sentiment": sentiment,
+                        "Price Before": before,
+                        "Price After": after,
+                        "% Change": change,
+                        "News Link": link
+                    }
+                    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+                    added_events.append(new_row)
+
+        if added_events:
+            st.success(f"{len(added_events)} events added to the grid.")
