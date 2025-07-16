@@ -179,7 +179,7 @@ if st.sidebar.button("📰 Auto-Fetch CEO News"):
 st.subheader("📉 Yahoo Finance Top Daily Losers")
 
 @st.cache_data(show_spinner=False)
-def fetch_yahoo_losers(top_n=25):
+def fetch_yahoo_losers(top_n=5):
     url = "https://finance.yahoo.com/losers"
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
