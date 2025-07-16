@@ -211,7 +211,7 @@ def fetch_yahoo_losers(top_n=5):
         st.error(f"⚠️ Failed to scrape Yahoo Finance losers: {e}")
         return pd.DataFrame()
         
-top_n = st.slider("Number of top losers to display", 5, 50, 25)
+top_n = st.slider("Number of top losers to display", 5)
 if st.button("🔄 Load Top Losers"):
     yahoo_losers = fetch_yahoo_losers(top_n)
     if not yahoo_losers.empty:
